@@ -9,7 +9,7 @@ import domains.weightDomain.WValue;
 import java.util.ArrayList;
 
 public class WKSCTL_Test {
-    private static final String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Dependecies/Experiments/WCCS/";
+    private static final String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCCS/";
 
     private interface OracleBuilder{
         BDDRelOracle<WValue> build(BDDRelEquationSystem<WValue> system);

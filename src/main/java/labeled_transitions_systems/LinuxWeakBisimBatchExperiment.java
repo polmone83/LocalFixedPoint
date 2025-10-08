@@ -4,13 +4,9 @@ import Experiments.Experiments;
 import Experiments.ExecBatch;
 import bddRelations.locallySoundOracles.BDDOracleComp;
 import bddRelations.locallySoundOracles.SMax;
-import bddRelations.locallySoundOracles.trigLocalv2;
 import bddRelations.soundOracles.BDDRelOracle;
 import bddRelations.termExtensionOracles.BDDRelExtensionOracle;
-import domains.boolDomain.BoolFormula;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.time.Duration;
 
 public class LinuxWeakBisimBatchExperiment implements Experiments {
