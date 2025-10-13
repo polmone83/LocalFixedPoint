@@ -45,7 +45,7 @@ public class WCTLBatchExperiments implements Experiments {
     private String testFIX(String model_fileName, String spec_fileName,
                            String pName, String fName, String k) {
 
-        long startTime = System.nanoTime(); // start the timer
+        //long startTime = System.nanoTime(); // start the timer
 
         String modelPath = path + model_fileName;
         String specPath = path + spec_fileName;
@@ -56,7 +56,7 @@ public class WCTLBatchExperiments implements Experiments {
         // solve the system
         WValue solution = system.localSolve(pName,fName, getOracle(system));
 
-        long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+        //long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
         return "" + system.getExecTime() + ", " + system.getRHSEvalCount() + ", " + system.discoveredVariables().size() + ", " + solution + ", " + k; //Long.toString(exectime);
     }
 
@@ -70,10 +70,18 @@ public class WCTLBatchExperiments implements Experiments {
     }
 
     public static void main(String[] args) {
+        // MAC
         String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/ABP/";
         //path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/LeaderElection/";
-        //String batch = "Batch-ABP-wctl.txt";
-        String batch = "Batch-wctl test.txt";
+        String batch = "Batch-ABP-wctl.txt";
+
+        // LINUX
+        //path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/ABP/";
+        //batch = "Batch-ABP-wctl-linux.txt";
+        path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/LeaderElection/";
+        batch = "Batch-wctl-linux.txt";
+
+        //String batch = "Batch-wctl test.txt";
 
         ExecBatch eb = new ExecBatch();
         WCTLBatchExperiments runner = new WCTLBatchExperiments();
