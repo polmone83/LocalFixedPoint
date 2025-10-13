@@ -18,9 +18,8 @@ public class SimpleVarSet implements VarSet<Integer> {
      */
     @Override
     public boolean unionWith(VarSet<Integer> otherSet) {
-        if(otherSet instanceof SimpleVarSet){
-            HashSet<Integer> other = ((SimpleVarSet) otherSet).set;
-            return set.addAll(other);
+        if(otherSet instanceof SimpleVarSet other){
+            return set.addAll(other.set);
         }else {
             throw new RuntimeException("Incompatible set");
         }
