@@ -8,10 +8,10 @@ public abstract class WCCSProcess implements Comparable<WCCSProcess>{
     private HashMap<String,Integer> labels;
 
     private final static WCCSProcessVisitor<WCCSProcess>[] nfs = new WCCSProcessVisitor[]{
-            new WCCSLabelRenamingNF(),
-            new WCCSChannelRenamingNF(),
-            new WCCSRestrictionNF(),
-            new WCCSLabelNF(),
+            //new WCCSLabelRenamingNF(),
+            //new WCCSChannelRenamingNF(),
+            //new WCCSRestrictionNF(),
+            //new WCCSLabelNF(),
             new WCCSFlattenNF(),
             new WCCSSortedNF() };
 

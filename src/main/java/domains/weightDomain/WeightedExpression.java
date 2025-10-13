@@ -41,12 +41,6 @@ public abstract class WeightedExpression implements RightHandSide<Integer, WValu
     //@Override
     public BDDRel evalExtension(EquationSystem<Integer, WValue, BDDRel, SimpleVarSet> system,
                                 BDDRel relation, Assignment<Integer, WValue> ass) {
-        /* OLD VERSION
-        WExpressionExtension extension;
-        extension = new WExpressionExtension((BDDRelEquationSystem<WValue>)system);
-        extension.setAssignment(ass);
-        extension.setRelation(relation);
-        return extension.visit(this);*/
 
         if(system instanceof BDDRelEquationSystem<WValue> wsystem) {
             WExpressionExtension e = new WExpressionExtension(wsystem, relation, ass);

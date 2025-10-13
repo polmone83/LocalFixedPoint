@@ -1,16 +1,14 @@
-package weighted_transitions_systems.WCTL;
+package weighted_transitions_systems;
 
 import Experiments.Experiments;
 import Experiments.ExecBatch;
 import bddRelations.BDDRel;
 import bddRelations.locallySoundOracles.BDDOracleComp;
 import bddRelations.locallySoundOracles.SMax;
-import bddRelations.soundOracles.BDDRelOracle;
 import bddRelations.termExtensionOracles.BDDRelExtensionOracle;
 import core.LocalOracle;
 import core.SimpleVarSet;
 import domains.weightDomain.WValue;
-import weighted_transitions_systems.WKS_CTL_EquationSystem;
 
 import java.time.Duration;
 
@@ -57,8 +55,7 @@ public class WCTLBatchExperiments implements Experiments {
         WValue solution = system.localSolve(pName,fName, getOracle(system));
 
         long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
-        return "" + exectime + ", " + system.getRHSEvalCount() + ", " + solution; //Long.toString(exectime);
-
+        return "" + exectime + ", " + system.getRHSEvalCount() + ", " + system.discoveredVariables().size() + ", " + solution; //Long.toString(exectime);
     }
 
     private LocalOracle<Integer, WValue, BDDRel, SimpleVarSet> getOracle(WKS_CTL_EquationSystem system) {
@@ -72,8 +69,10 @@ public class WCTLBatchExperiments implements Experiments {
 
     public static void main(String[] args) {
         String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/ABP/";
-        String batch = "Batch-ABP-wctl.txt";
-        //String batch = "Batch-wctl test.txt";
+        //path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/LeaderElection/";
+        //String batch = "Batch-ABP-wctl.txt";
+        String batch = "Batch-wctl test.txt";
+
         ExecBatch eb = new ExecBatch();
         WCTLBatchExperiments runner = new WCTLBatchExperiments();
         eb.runBatch(path+batch, runner);

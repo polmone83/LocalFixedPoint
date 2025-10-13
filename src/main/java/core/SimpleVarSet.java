@@ -61,7 +61,7 @@ public class SimpleVarSet implements VarSet<Integer> {
     public Iterator<Integer> allSetElements() {
         // provide a randomly ordered iterator
 //        ArrayList<Integer> list = new ArrayList<>(set);
-//        Collections.shuffle(list);
+//        Collections.sort(list,Collections.reverseOrder());
 //        return list.iterator();
         return set.iterator(); //old implementation
     }

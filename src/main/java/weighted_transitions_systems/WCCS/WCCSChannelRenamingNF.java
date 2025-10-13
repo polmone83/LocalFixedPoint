@@ -1,5 +1,8 @@
 package weighted_transitions_systems.WCCS;
 
+import labeled_transitions_systems.CCS.CCSProcess;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -14,37 +17,35 @@ public class WCCSChannelRenamingNF extends WCCSBaseNFVisitor{
         if(p.process instanceof WCCSProcess.Nil){
             // 0[\rho] ~ 0
             return p.process;
-        }else if(p.process instanceof WCCSProcess.AtomicLabel){
+        }else if(p.process instanceof WCCSProcess.AtomicLabel child){
             // (a:P)[\rho] ~ a:(P[\rho])
-            WCCSProcess.AtomicLabel child = (WCCSProcess.AtomicLabel) p.process;
             child.resetID();
             child.process = visit(new WCCSProcess.ChannelRenaming(child.process, p.renaming));
             return child;
-        }else if(p.process instanceof WCCSProcess.Action) {
+        }else if(p.process instanceof WCCSProcess.Action child) {
             // push the renaming down (a.P)[\rho] ~ \rho(a).(P[\rho])
-            WCCSProcess.Action child = (WCCSProcess.Action) p.process;
             String renamedChan = p.renaming.getOrDefault(child.channel,child.channel); // \rho(a)
             WCCSProcess p_rho = visit(new WCCSProcess.ChannelRenaming(child.process, p.renaming));
             return new WCCSProcess.Action(child.isInput, renamedChan, child.weight, p_rho);
-        }else if(p.process instanceof WCCSProcess.Parallel){
-            // push renaming down (P | Q)[\rho] ~ P[\rho] | Q[\rho]
-            WCCSProcess.Parallel c_child = (WCCSProcess.Parallel) p.process;
-            c_child.children.replaceAll(
-                    child -> visit(new WCCSProcess.ChannelRenaming(child,p.renaming))
-            );
-            c_child.resetID();
-            return c_child;
-        }else if(p.process instanceof WCCSProcess.Choice){
+//        }else if(p.process instanceof WCCSProcess.Parallel c_child){
+//            // push renaming down (P | Q)[\rho] ~ P[\rho] | Q[\rho]
+              // this is not correct unless \rho is a permutation
+//            //WCCSProcess.Parallel c_child = (WCCSProcess.Parallel) p.process;
+//            c_child.children.replaceAll(
+//                    child -> visit(new WCCSProcess.ChannelRenaming(child,p.renaming))
+//            );
+//            c_child.resetID();
+//            return c_child;
+        }else if(p.process instanceof WCCSProcess.Choice c_child){
             // push renaming down (P + Q)[\rho] ~ P[\rho] + Q[\rho]
-            WCCSProcess.Choice c_child = (WCCSProcess.Choice) p.process;
-            c_child.children.replaceAll(
-                    child -> visit(new WCCSProcess.ChannelRenaming(child,p.renaming))
-            );
-            c_child.resetID();
-            return c_child;
-        }else if(p.process instanceof WCCSProcess.ChannelRenaming){
+
+            ArrayList<WCCSProcess> renamedChildren = new ArrayList<>();
+            for (WCCSProcess child : c_child.children) {
+                renamedChildren.add(visit(new WCCSProcess.ChannelRenaming(child,p.renaming)));
+            }
+            return new WCCSProcess.Choice(renamedChildren);
+        }else if(p.process instanceof WCCSProcess.ChannelRenaming child){
             // compose renaming P[\rho][\phi] ~ P[\phi \circ \rho]
-            WCCSProcess.ChannelRenaming child = (WCCSProcess.ChannelRenaming) p.process;
             Map<String, String> renaming = composeRenaming(p.renaming, child.renaming);
             if(renaming.size() == 0){
                 return visit(child.process);

@@ -76,15 +76,15 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
             String renamedChan = p.applyRenaming(child.channel); // \rho(a)
             CCSProcess p_rho = visit(new CCSProcess.Renaming(child.process, p.renaming));
             return new CCSProcess.Action(child.isInput, renamedChan, p_rho);
-        }else if(p.process instanceof CCSProcess.Parallel){
-            // push renaming down (P | Q)[\rho] ~ P[\rho] | Q[\rho]
-            ArrayList<CCSProcess> list = new ArrayList<>();
-            ArrayList<CCSProcess> oldList = ((CCSProcess.Parallel) p.process).children;
-            for (CCSProcess child : oldList) {
-                CCSProcess subproc = visit(new CCSProcess.Renaming(child,p.renaming));
-                list.add(subproc);
-            }
-            return new CCSProcess.Parallel(list);
+//        }else if(p.process instanceof CCSProcess.Parallel){
+//            // push renaming down (P | Q)[\rho] ~ P[\rho] | Q[\rho]
+//            ArrayList<CCSProcess> list = new ArrayList<>();
+//            ArrayList<CCSProcess> oldList = ((CCSProcess.Parallel) p.process).children;
+//            for (CCSProcess child : oldList) {
+//                CCSProcess subproc = visit(new CCSProcess.Renaming(child,p.renaming));
+//                list.add(subproc);
+//            }
+//            return new CCSProcess.Parallel(list);
         }else if(p.process instanceof CCSProcess.Choice){
             // push renaming down (P + Q)[\rho] ~ P[\rho] + Q[\rho]
             TreeSet<CCSProcess> list = new TreeSet<>();

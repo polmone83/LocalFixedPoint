@@ -9,14 +9,17 @@ import domains.weightDomain.WValue;
 import domains.weightDomain.WeightedExpression;
 import domains.weightDomain.WeightedExpressionVisitor;
 
+import java.util.HashMap;
+
 public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
 
     private BDDRel relation;
     private Assignment<Integer, WValue> ass;
     private final BDDRelEquationSystem<WValue> system;
     private final BDDRelUniverse u;
-
-    //private LazyEvaluator evaluator;
+    private final HashMap<WeightedExpression, WValue> cacheValues;
+    private final HashMap<Integer,BDDSet> cacheVars;
+    private LazyEvaluator evaluator;
 
     public WExpressionExtension(BDDRelEquationSystem<WValue> system,
                                 BDDRel relation,
@@ -25,31 +28,26 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
         this.u = system.getUniverse();
         this.relation = relation;
         this.ass = ass;
-        //evaluator = new LazyEvaluator();
+        cacheVars = new HashMap<>();
+        cacheValues = new HashMap<>();
+        evaluator = new LazyEvaluator();
     }
 
-    /*public void setAssignment(Assignment<Integer, WValue> ass) {
-        this.ass = ass;
-    }*/
+    private WValue lazyeval(WeightedExpression expr){
+        return evaluator.visit(expr);
+    }
 
-    /*public void setRelation(BDDRel relation) {
-        this.relation = relation;
-    }*/
-
-    /*private class LazyEvaluator implements WeightedExpressionVisitor<WValue>{
-        private HashMap<WeightedExpression, WValue> store;
-
-        public LazyEvaluator(){
-            this.store = new HashMap<>(); // reset the store
-        }
+    private class LazyEvaluator implements WeightedExpressionVisitor<WValue>{
 
         @Override
         public WValue visit(WeightedExpression expr) {
-            WValue val = store.get(expr);
+            WValue val = cacheValues.get(expr);
             if(val != null){
                 return val;
             }else{
-                return expr.accept(this);
+                WValue value = WeightedExpressionVisitor.super.visit(expr);
+                cacheValues.put(expr, value);
+                return value;
             }
         }
 
@@ -60,15 +58,12 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
 
         @Override
         public WValue visitNatural(WeightedExpression.Natural expr) {
-            WValue val = expr.eval(WExpressionExtension.this.ass);
-            store.put(expr,val);
-            return val;
+            return expr.n;
         }
 
         @Override
         public WValue visitBound(WeightedExpression.Bound expr) {
             WValue val =  WValue.leq(visit(expr.expr), visit(expr.bound)) ? WValue.zero : WValue.infinity;
-            store.put(expr,val);
             return val;
         }
 
@@ -84,7 +79,6 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
                 }
                 maxval = WValue.max(maxval,e_val);
             }
-            store.put(expr,maxval);
             return maxval;
         }
 
@@ -99,28 +93,25 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
                 }
                 minval = WValue.min(minval,e_val);
             }
-            store.put(expr,minval);
             return minval;
         }
 
         @Override
         public WValue visitAdd(WeightedExpression.Add expr) {
             WValue val = WValue.add(visit(expr.left),visit(expr.right));
-            store.put(expr,val);
             return val;
         }
 
         @Override
         public WValue visitVar(WeightedExpression.Var expr) {
-            WValue val = expr.eval(WExpressionExtension.this.ass);
-            store.put(expr,val);
-            return val;
+            return WExpressionExtension.this.ass.getValue(expr.var);
         }
-    }*/
+    }
 
     @Override
     public BDDSet visit(WeightedExpression expr) {
-        if(expr.eval(ass).equals(WValue.zero)){
+        WValue val = lazyeval(expr); // this call caches the evaluation of the subterms too
+        if(val.equals(WValue.zero)){
             return new BDDSet(u); // empty set
         }else{
             return WeightedExpressionVisitor.super.visit(expr);
@@ -132,7 +123,7 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
         BDDSet ret = new BDDSet(u); // empty set
         for (WeightedExpression subExpr : expr.subExpr) {
             BDDSet subret = visit(subExpr);
-            if(subret.isEmpty() && subExpr.eval(ass).equals(WValue.infinity)){
+            if(subret.isEmpty() && lazyeval(subExpr).equals(WValue.infinity)){
                 return new BDDSet(u); // empty set
             }
             ret.unionWith(subret);
@@ -143,7 +134,7 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
     @Override
     public BDDSet visitMin(WeightedExpression.Min expr) {
         for (WeightedExpression subExpr : expr.subExpr) {
-            if(subExpr.eval(ass).equals(WValue.zero)){
+            if(lazyeval(subExpr).equals(WValue.zero)){
                 return new BDDSet(u); // empty set
             }
         }
@@ -163,11 +154,11 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
     @Override
     public BDDSet visitAdd(WeightedExpression.Add expr) {
         BDDSet left = visit(expr.left);
-        if(left.isEmpty() && expr.left.eval(ass).equals(WValue.infinity)){
+        if(left.isEmpty() && lazyeval(expr.left).equals(WValue.infinity)){
             return new BDDSet(u); // empty set
         }
         BDDSet right = visit(expr.right);
-        if(right.isEmpty() && expr.right.eval(ass).equals(WValue.infinity)){
+        if(right.isEmpty() && lazyeval(expr.right).equals(WValue.infinity)){
             return new BDDSet(u); // empty set
         }
         left.unionWith(right);
@@ -176,7 +167,12 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
 
     @Override
     public BDDSet visitVar(WeightedExpression.Var expr) {
-        return BDDSet.toBDDSet(relation.sliceLeftAt(expr.var));
+        BDDSet val = cacheVars.get(expr.var);
+        if(val == null){
+            val = BDDSet.toBDDSet(relation.sliceLeftAt(expr.var));
+            cacheVars.put(expr.var, val);
+        }
+        return val;
     }
 
     @Override
@@ -186,12 +182,11 @@ public class WExpressionExtension implements WeightedExpressionVisitor<BDDSet> {
 
     @Override
     public BDDSet visitBound(WeightedExpression.Bound expr) {
-        WValue e_val = expr.expr.eval(ass);
+        WValue e_val = lazyeval(expr.expr);
         if(e_val.equals(WValue.zero))
             return new BDDSet(u); // empty set
 
-        WValue bound_val = expr.bound.eval(ass);
-
+        WValue bound_val = lazyeval(expr.bound);
         BDDSet bound_dep = visit(expr.bound);
         if(WValue.leq(e_val,bound_val) && bound_dep.isEmpty()){
             return new BDDSet(u); // empty set

@@ -8,7 +8,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class WCCSTest {
-    private static final String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Dependecies/Experiments/WCCS/";
+    private static final String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/ABP/";
 
 
     public static void main(String[] args) {
@@ -20,13 +20,13 @@ public class WCCSTest {
     }
 
     private static void testSuccessors() {
-        WCCSInterpreter interpreter = new WCCSInterpreter(path + "UnitTest.wccs",true
+        WCCSInterpreter interpreter = new WCCSInterpreter(path + "ABP-B5M7.txt",true
         );
         /*CCSAbstractProcess p = interpreter.getProcess("Spec");
         System.out.println(p.successors());
         System.out.println(p.weakSuccessors());*/
 
-        WCCSProcess p = new WCCSProcess.PName("RestrictedCommunication",interpreter).getDef();
+        WCCSProcess p = new WCCSProcess.PName("System",interpreter).getDef();
 
         System.out.println(p);
         System.out.println(p.successors());

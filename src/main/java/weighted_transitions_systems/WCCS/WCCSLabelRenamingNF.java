@@ -1,8 +1,8 @@
 package weighted_transitions_systems.WCCS;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.*;
 
 /**
  * This visitor pushes down and aggregates all label renaming
@@ -41,29 +41,25 @@ public class WCCSLabelRenamingNF extends WCCSBaseNFVisitor{
         if(p.process instanceof WCCSProcess.Nil){
             // 0[\rho] ~ 0
             return p.process;
-        }else if(p.process instanceof WCCSProcess.Action) {
+        }else if(p.process instanceof WCCSProcess.Action child) {
             // push the renaming down (a.P)[\rho] ~ a.(P[\rho])
-            WCCSProcess.Action child = (WCCSProcess.Action) p.process;
             WCCSProcess p_rho = visit(new WCCSProcess.LabelRenaming(child.process, p.renaming));
-            child.process = p_rho;
-            child.resetID();
-            return child;
+            return new WCCSProcess.Action(child.isInput, child.channel, child.weight,p_rho);
         }else if(p.process instanceof WCCSProcess.Parallel){
             // push renaming down (P | Q)[\rho] ~ P[\rho] | Q[\rho]
             WCCSProcess.Parallel c_child = (WCCSProcess.Parallel) p.process;
-            c_child.children.replaceAll(
-                    child -> visit( new WCCSProcess.LabelRenaming(child,p.renaming))
-            );
-            c_child.resetID();
-            return c_child;
-        }else if(p.process instanceof WCCSProcess.Choice){
+            ArrayList<WCCSProcess> newChildren = new ArrayList<>();
+            for (WCCSProcess child : c_child.children) {
+                newChildren.add(visit( new WCCSProcess.LabelRenaming(child,p.renaming)));
+            }
+            return new WCCSProcess.Parallel(newChildren);
+        }else if(p.process instanceof WCCSProcess.Choice c_child){
             // push renaming down (P + Q)[\rho] ~ P[\rho] + Q[\rho]
-            WCCSProcess.Choice c_child = (WCCSProcess.Choice) p.process;
-            c_child.children.replaceAll(
-                    child -> visit( new WCCSProcess.LabelRenaming(child,p.renaming))
-            );
-            c_child.resetID();
-            return c_child;
+            ArrayList<WCCSProcess> newChildren = new ArrayList<>();
+            for (WCCSProcess child : c_child.children) {
+                newChildren.add(visit( new WCCSProcess.LabelRenaming(child,p.renaming)));
+            }
+            return new WCCSProcess.Choice(newChildren);
         }else if(p.process instanceof WCCSProcess.LabelRenaming) {
             // compose renaming P[\rho][\phi] ~ P[\phi \circ \rho]
             WCCSProcess.LabelRenaming child = (WCCSProcess.LabelRenaming) p.process;
@@ -73,13 +69,14 @@ public class WCCSLabelRenamingNF extends WCCSBaseNFVisitor{
             } else {
                 return visit(new WCCSProcess.LabelRenaming(child.process, renaming));
             }
-        }else if(p.process instanceof WCCSProcess.AtomicLabel){
+        }else if(p.process instanceof WCCSProcess.AtomicLabel child){
             // (a:P)[a => b] ~ b:(P[a => b])
-            WCCSProcess.AtomicLabel child = (WCCSProcess.AtomicLabel) p.process;
-            child.labels.replaceAll(label-> p.renaming.getOrDefault(label,label));
-            child.process = visit(new WCCSProcess.LabelRenaming(child.process,p.renaming));
-            child.resetID();
-            return child;
+            HashSet<String> renamedLabels = new HashSet<>();
+            for (String label : child.labels) {
+                renamedLabels.add(p.renaming.getOrDefault(label,label));
+            }
+            return new WCCSProcess.AtomicLabel(new ArrayList<>(renamedLabels),
+                    visit(new WCCSProcess.LabelRenaming(child.process,p.renaming)));
         }
         // apply default visitor
         return super.visitLabelRenaming(p);

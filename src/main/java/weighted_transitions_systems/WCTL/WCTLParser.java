@@ -209,6 +209,11 @@ public class WCTLParser extends Parser {
 		public void copyFrom(FormulaContext ctx) {
 			super.copyFrom(ctx);
 		}
+
+		@Override
+		public String toString() {
+			return WCTLPrettyPrint.prettyPrint(this);
+		}
 	}
 	@SuppressWarnings("CheckReturnValue")
 	public static class BoundedUniversalFinallyContext extends FormulaContext {

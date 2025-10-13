@@ -88,7 +88,7 @@ public class WeakBisimBatchExperiment implements Experiments {
     }
 
     public static void main(String[] args) {
-        String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Dependecies/Experiments/CCS/Batch-ABP_ok.txt";
+        String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/CCS/Batch-ABP_ok.txt";
 
         ExecBatch eb = new ExecBatch();
         WeakBisimBatchExperiment runner = new WeakBisimBatchExperiment();

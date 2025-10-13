@@ -28,9 +28,7 @@ public class WCCSFlattenNF extends WCCSBaseNFVisitor{
             return children.getFirst();
         }
 
-        p.children = children;
-        p.resetID();
-        return p;
+        return new WCCSProcess.Parallel(children);
     }
 
     @Override

@@ -14,9 +14,7 @@ import weighted_transitions_systems.WCTL.WCTLBaseVisitor;
 import weighted_transitions_systems.WCTL.WCTLInterpreter;
 import weighted_transitions_systems.WCTL.WCTLParser;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
@@ -315,11 +313,14 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
         @Override
         public WeightedExpression visitBoundedExistentialFinally(WCTLParser.BoundedExistentialFinallyContext ctx) {
             // EF[<= WEIGHT] psi
+            //System.out.println(this);
+
             WCTLParser.FormulaContext psi = ctx.formula();
 
             if (!symbolic) {
                 // construct the cover edge
                 Node n = new Node(process, formula, true);
+                //System.out.println("Cover: " + n);
                 addVariable(n); // the same node but symbolic
                 // the bound
                 Integer w = Integer.parseInt(ctx.bound.getText());
@@ -327,12 +328,19 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                 return new WeightedExpression.Bound(w, getVariable(n),
                         WKS_CTL_EquationSystem.this);
             } else {
-                Node psiNode = new Node(process, psi, false);
-                addVariable(psiNode);
-
                 HashSet<WeightedExpression> subExpressions = new HashSet<>();
+
+                Node psiNode = new Node(process, psi, false);
+                //System.out.println("Concrete: " + psiNode);
+                addVariable(psiNode);
                 subExpressions.add(getVariable(psiNode));
-                for (WCCSProcess.WCCS_Step step : getSuccessors(process)) {
+
+                //Set<WCCSProcess.WCCS_Step> successors = getSuccessors(process);
+                ArrayList<WCCSProcess.WCCS_Step> successors = new ArrayList(getSuccessors(process));
+                //System.out.println("Number of successors :" +  successors.size());
+                for (WCCSProcess.WCCS_Step step : successors) {
+                //for(int i = successors.size(); i > 0; i--){
+                    // WCCSProcess.WCCS_Step step = successors.get(i-1);
                     Node succNode = new Node(step.process, this.formula, true);
                     addVariable(succNode);
 
@@ -342,6 +350,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                                     WKS_CTL_EquationSystem.this);
                     subExpressions.add(stepExpr);
                 }
+
                 return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
             }
         }
@@ -376,14 +385,14 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
         @Override
         public WeightedExpression visitExistentialUntil(WCTLParser.ExistentialUntilContext ctx) {
-            // E phi U[<= WEIGHT] psi
+            // E phi U psi
             WCTLParser.FormulaContext phi = ctx.left;
             WCTLParser.FormulaContext psi = ctx.right;
 
             if (symbolic)
                 throw new RuntimeException("The formula " + ctx + "cannot be symbolic");
 
-
+            //System.out.println("process: " + process);
             Node phiNode = new Node(process, phi);
             addVariable(phiNode);
             Node psiNode = new Node(process, psi);
@@ -392,6 +401,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
             HashSet<WeightedExpression> subExpressions = new HashSet<>();
             subExpressions.add(getVariable(psiNode));
             for (WCCSProcess.WCCS_Step step : getSuccessors(process)) {
+                System.out.println(step);
                 Node succNode = new Node(step.process, this.formula);
                 addVariable(succNode);
 
@@ -415,13 +425,12 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
             if (symbolic)
                 throw new RuntimeException("The formula " + ctx + "cannot be symbolic");
 
-            Node phiNode = new Node(process, phi);
-            addVariable(phiNode);
-
             HashSet<WeightedExpression> subExpressions = new HashSet<>();
             for (WCCSProcess.WCCS_Step step : getSuccessors(process)) {
+                //System.out.println(step);
                 if (step.weight <= bound) {
                     Node succNode = new Node(step.process, ctx.formula());
+
                     addVariable(succNode);
 
                     subExpressions.add(getVariable(succNode));
