@@ -133,6 +133,14 @@ public abstract class EquationSystem<V, D, R extends VarRelation<V,S>, S extends
 //        log.append('\n');
 //        log.append('\n');
 
+        equations.forEach(
+                (V x, LazyRHS rhs) ->{
+                    System.out.print(x + " = ");
+                    System.out.print(rhs.counter + ":");
+                    System.out.println(rhs.rhs);
+                }
+        );
+
         // Stop measuring execution time
         execTime = Duration.ofNanos(System.nanoTime()-startTime).toMillis();
 

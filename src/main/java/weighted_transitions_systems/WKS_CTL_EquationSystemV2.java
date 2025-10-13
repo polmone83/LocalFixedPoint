@@ -9,17 +9,21 @@ import domains.weightDomain.WESimplify;
 import domains.weightDomain.WValue;
 import domains.weightDomain.WeightedExpression;
 import org.antlr.v4.runtime.tree.ParseTree;
+import weighted_transitions_systems.WCCS.WCCSInterpreter;
 import weighted_transitions_systems.WCCS.WCCSProcesSuccessor;
 import weighted_transitions_systems.WCCS.WCCSProcess;
-import weighted_transitions_systems.WCCS.WCCSInterpreter;
 import weighted_transitions_systems.WCTL.WCTLBaseVisitor;
 import weighted_transitions_systems.WCTL.WCTLInterpreter;
 import weighted_transitions_systems.WCTL.WCTLParser;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
-public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
+public class WKS_CTL_EquationSystemV2 extends BDDRelEquationSystem<WValue> {
 
+    private int K = 0;
     private final WeightedExpression zero, infinity;
     /**
      * The interpreter used to generate WCCS processes and their successors
@@ -39,12 +43,12 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
     private HashMap<Integer, Node> nodesIndex;
     private Integer varCounter;
 
-    public WKS_CTL_EquationSystem(String specCode, String modelCode){
+    public WKS_CTL_EquationSystemV2(String specCode, String modelCode){
         this(specCode, modelCode,false);
     }
 
-    public WKS_CTL_EquationSystem(String specCode, String modelCode,
-                                  boolean fileFlag) {
+    public WKS_CTL_EquationSystemV2(String specCode, String modelCode,
+                                    boolean fileFlag) {
         zero = new WeightedExpression.Natural(0,this);
         infinity = new WeightedExpression.Infinity(this);
         // parse the WCTL formula
@@ -72,6 +76,10 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
             nodesIndex.put(varCounter, node);
             varCounter++;
         }
+    }
+
+    public void setK(int K){
+        this.K = K;
     }
 
     /**
@@ -189,7 +197,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                making right-hand-sides deeper. */
             WeightedExpression left = visit(ctx.left);
             WeightedExpression right = visit(ctx.right);
-            return new WeightedExpression.Max(left, right, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Max(left, right, WKS_CTL_EquationSystemV2.this);
         }
 
         @Override
@@ -198,7 +206,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                making right-hand-sides deeper. */
             WeightedExpression left = visit(ctx.left);
             WeightedExpression right = visit(ctx.right);
-            return new WeightedExpression.Min(left, right, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Min(left, right, WKS_CTL_EquationSystemV2.this);
         }
 
         @Override
@@ -215,7 +223,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                 Integer w = Integer.parseInt(ctx.bound.getText());
                 // return the bound expression
                 return new WeightedExpression.Bound(w, getVariable(n),
-                        WKS_CTL_EquationSystem.this);
+                        WKS_CTL_EquationSystemV2.this);
             } else {
                 Node phiNode = new Node(process, phi, false);
                 addVariable(phiNode);
@@ -229,13 +237,13 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                     // create the expression
                     WeightedExpression stepExpr =
                             new WeightedExpression.Add(step.weight, getVariable(succNode),
-                                    WKS_CTL_EquationSystem.this);
+                                    WKS_CTL_EquationSystemV2.this);
                     subExpressions.add(stepExpr);
                 }
                 // compose the expression
                 return new WeightedExpression.Min(getVariable(psiNode),
-                        new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this),
-                        WKS_CTL_EquationSystem.this);
+                        new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this),
+                        WKS_CTL_EquationSystemV2.this);
 
             }
         }
@@ -254,7 +262,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                 Integer w = Integer.parseInt(ctx.bound.getText());
                 // return the bound expression
                 return new WeightedExpression.Bound(w, getVariable(n),
-                        WKS_CTL_EquationSystem.this);
+                        WKS_CTL_EquationSystemV2.this);
             } else {
                 Node phiNode = new Node(process, phi, false);
                 addVariable(phiNode);
@@ -270,16 +278,16 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                     // create the expression
                     WeightedExpression stepExpr =
                             new WeightedExpression.Add(step.weight, getVariable(succNode),
-                                    WKS_CTL_EquationSystem.this);
+                                    WKS_CTL_EquationSystemV2.this);
                     subExpressions.add(
                             new WeightedExpression.Max(
                                     getVariable(phiNode),
                                     stepExpr,
-                                    WKS_CTL_EquationSystem.this
+                                    WKS_CTL_EquationSystemV2.this
                             )
                     );
                 }
-                return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+                return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
             }
         }
 
@@ -296,7 +304,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                 Integer w = Integer.parseInt(ctx.bound.getText());
                 // return the bound expression
                 return new WeightedExpression.Bound(w, getVariable(n),
-                        WKS_CTL_EquationSystem.this);
+                        WKS_CTL_EquationSystemV2.this);
             } else {
                 Node psiNode = new Node(process, psi, false);
                 addVariable(psiNode);
@@ -307,13 +315,13 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                     // create the expression
                     WeightedExpression stepExpr =
                             new WeightedExpression.Add(step.weight, getVariable(succNode),
-                                    WKS_CTL_EquationSystem.this);
+                                    WKS_CTL_EquationSystemV2.this);
                     subExpressions.add(stepExpr);
                 }
                 // compose the expression
                 return new WeightedExpression.Min(getVariable(psiNode),
-                        new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this),
-                        WKS_CTL_EquationSystem.this);
+                        new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this),
+                        WKS_CTL_EquationSystemV2.this);
 
             }
         }
@@ -324,42 +332,49 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
             //System.out.println(this);
 
             WCTLParser.FormulaContext psi = ctx.formula();
+            // the bound
+            Integer w = Integer.parseInt(ctx.bound.getText());
 
             if (!symbolic) {
                 // construct the cover edge
                 Node n = new Node(process, formula, true);
                 //System.out.println("Cover: " + n);
                 addVariable(n); // the same node but symbolic
-                // the bound
-                Integer w = Integer.parseInt(ctx.bound.getText());
                 // return the bound expression
                 return new WeightedExpression.Bound(w, getVariable(n),
-                        WKS_CTL_EquationSystem.this);
+                        WKS_CTL_EquationSystemV2.this);
             } else {
                 HashSet<WeightedExpression> subExpressions = new HashSet<>();
 
-                Node psiNode = new Node(process, psi, false);
-                //System.out.println("Concrete: " + psiNode);
-                addVariable(psiNode);
-                subExpressions.add(getVariable(psiNode));
+                // get the successors up to 'K' steps and accumulated weight 'w'
+                Set<WCCSProcess.WCCS_Step> kSet = succGenerator.BFSsuccessors(process, K, w);
+                //System.out.println("succ: " + kSet.size());
+//
+                for (WCCSProcess.WCCS_Step kstep : kSet) {
+                    Node psiNode = new Node(kstep.process, psi, false);
+                    //System.out.println("Concrete: " + psiNode);
+                    //addVariable(psiNode);
+                    WeightedExpression e = new WeightedExpression.Add(kstep.weight, psiNode.visit(psi),
+                            WKS_CTL_EquationSystemV2.this);
+                    subExpressions.add(e);
+                }
 
-                //Set<WCCSProcess.WCCS_Step> successors = getSuccessors(process);
-                ArrayList<WCCSProcess.WCCS_Step> successors = new ArrayList(getSuccessors(process));
+                Set<WCCSProcess.WCCS_Step> successors = succGenerator.extendSuccByOne(kSet);
+                //Set<WCCSProcess.WCCS_Step> successors = succGenerator.getSuccessors(process);
+                //ArrayList<WCCSProcess.WCCS_Step> successors = new ArrayList<>(succGenerator.getSuccessors(process));
                 //System.out.println("Number of successors :" +  successors.size());
                 for (WCCSProcess.WCCS_Step step : successors) {
-                //for(int i = successors.size(); i > 0; i--){
-                    // WCCSProcess.WCCS_Step step = successors.get(i-1);
                     Node succNode = new Node(step.process, this.formula, true);
                     addVariable(succNode);
 
                     // create the expression
                     WeightedExpression stepExpr =
                             new WeightedExpression.Add(step.weight, getVariable(succNode),
-                                    WKS_CTL_EquationSystem.this);
+                                    WKS_CTL_EquationSystemV2.this);
                     subExpressions.add(stepExpr);
                 }
 
-                return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+                return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
             }
         }
 
@@ -385,8 +400,8 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
             }
             // compose the expression
             return new WeightedExpression.Min(getVariable(psiNode),
-                    new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this),
-                    WKS_CTL_EquationSystem.this);
+                    new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this),
+                    WKS_CTL_EquationSystemV2.this);
 
 
         }
@@ -417,11 +432,11 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                         new WeightedExpression.Max(
                                 getVariable(phiNode),
                                 getVariable(succNode),
-                                WKS_CTL_EquationSystem.this
+                                WKS_CTL_EquationSystemV2.this
                         )
                 );
             }
-            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
         }
 
         @Override
@@ -444,7 +459,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                     subExpressions.add(getVariable(succNode));
                 }
             }
-            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
 
         }
 
@@ -466,7 +481,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
                 subExpressions.add(getVariable(succNode));
             }
-            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
         }
 
         @Override
@@ -490,7 +505,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
                 }
             }
 
-            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this);
         }
 
         @Override
@@ -511,7 +526,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
                 subExpressions.add(getVariable(succNode));
             }
-            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this);
 
         }
 
@@ -535,7 +550,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
                 subExpressions.add(getVariable(succNode));
             }
-            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
 
         }
 
@@ -559,7 +574,7 @@ public class WKS_CTL_EquationSystem extends BDDRelEquationSystem<WValue> {
 
                 subExpressions.add(getVariable(succNode));
             }
-            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystem.this);
+            return new WeightedExpression.Max(subExpressions, WKS_CTL_EquationSystemV2.this);
 
         }
 

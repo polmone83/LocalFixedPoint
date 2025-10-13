@@ -1,9 +1,8 @@
 package weighted_transitions_systems.WCCS;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+import org.checkerframework.checker.units.qual.A;
+
+import java.util.*;
 
 import static weighted_transitions_systems.WCCS.WCCSProcess.TAU;
 
@@ -13,6 +12,115 @@ public class WCCSProcesSuccessor implements WCCSProcessVisitor<Set<WCCSProcess.W
 
     public WCCSProcesSuccessor(){
         cache = new HashMap<>();
+    }
+
+    public Set<WCCSProcess.WCCS_Step> getSuccessors(WCCSProcess p){
+        return visit(p);
+    }
+
+    public Set<WCCSProcess.WCCS_Step> getSuccessors(WCCSProcess p, int k){
+        Set<WCCSProcess.WCCS_Step> steps = new HashSet<>();
+
+        Set<WCCSProcess.WCCS_Step> frontier = new HashSet<>();
+        frontier.add(new WCCSProcess.WCCS_Step(p,0)); // add the first step
+        steps.addAll(frontier);
+
+        for(int i = 0; i < k; i++){
+            frontier = extendSuccByOne(frontier);
+            steps.addAll(frontier);
+        }
+        return steps;
+    }
+
+    public Set<WCCSProcess.WCCS_Step> getSuccessors(WCCSProcess p, int k, int bound){
+        Set<WCCSProcess.WCCS_Step> steps = new HashSet<>();
+
+        Set<WCCSProcess.WCCS_Step> frontier = new HashSet<>();
+        frontier.add(new WCCSProcess.WCCS_Step(p,0)); // add the first step
+        steps.addAll(frontier);
+
+        for(int i = 0; i < k; i++){
+            frontier = extendSuccByOne(frontier);
+            for (WCCSProcess.WCCS_Step step : frontier) {
+                if(step.weight <= bound) steps.add(step);
+            }
+        }
+        return steps;
+    }
+
+    /*
+    procedure DFS_iterative(G, v) is
+    let S be a stack
+    label v as discovered
+    S.push(iterator of G.adjacentEdges(v))
+    while S is not empty do
+        if S.peek().hasNext() then
+            w = S.peek().next()
+            if w is not labeled as discovered then
+                label w as discovered
+                S.push(iterator of G.adjacentEdges(w))
+        else
+            S.pop()
+     */
+
+    public Set<WCCSProcess.WCCS_Step> DFSsuccessors(WCCSProcess p, int k, int bound){
+        Set<WCCSProcess.WCCS_Step> discovered = new HashSet<>(); // discovered
+        ArrayList<WCCSProcess.WCCS_Step> S = new ArrayList<>(); // stack
+        WCCSProcess.WCCS_Step source = new WCCSProcess.WCCS_Step(p,0); // source
+        S.add(source);
+        discovered.add(source);
+        while(discovered.size() <= k && S.size() > 0){
+            WCCSProcess.WCCS_Step q = S.getLast();
+            S.removeLast();
+            for (WCCSProcess.WCCS_Step step : getSuccessors(q.process)) {
+                WCCSProcess.WCCS_Step accStep = // accumulate the weight
+                        new WCCSProcess.WCCS_Step(step.process,
+                                q.weight + step.weight);
+                if(accStep.weight <= bound && !discovered.contains(accStep)){ //
+                    discovered.add(accStep); // add to discovered
+                    S.add(accStep); // push the new element in the stack
+                }
+            }
+        }
+        return discovered;
+    }
+
+    public Set<WCCSProcess.WCCS_Step> BFSsuccessors(WCCSProcess p, int k, int bound){
+        Set<WCCSProcess.WCCS_Step> discovered = new HashSet<>(); // discovered
+        ArrayList<WCCSProcess.WCCS_Step> Q = new ArrayList<>(); // queue
+        WCCSProcess.WCCS_Step source = new WCCSProcess.WCCS_Step(p,0); // source
+        Q.add(source);
+        discovered.add(source);
+
+        while(discovered.size() <= k && Q.size() > 0){
+            WCCSProcess.WCCS_Step q = Q.getFirst(); // extract the element from the queue
+            Q.removeFirst();
+            for (WCCSProcess.WCCS_Step step : getSuccessors(q.process)) {
+                WCCSProcess.WCCS_Step accStep = // accumulate the weight
+                        new WCCSProcess.WCCS_Step(step.process,
+                                q.weight + step.weight);
+                if(accStep.weight <= bound && !discovered.contains(accStep)){
+                    discovered.add(accStep); // add to discovered
+
+                    Q.add(accStep); // enqueue the new element in the stack
+                }
+            }
+        }
+        return discovered;
+    }
+
+
+
+    public Set<WCCSProcess.WCCS_Step> extendSuccByOne(Set<WCCSProcess.WCCS_Step> steps){
+        Set<WCCSProcess.WCCS_Step> nextSteps = new HashSet<>();
+        for (WCCSProcess.WCCS_Step step : steps) {
+            Set<WCCSProcess.WCCS_Step> succ = getSuccessors(step.process);
+            for (WCCSProcess.WCCS_Step nextStep : succ) {
+                nextSteps.add(new WCCSProcess.WCCS_Step(nextStep.process,
+                        step.weight+nextStep.weight));
+            }
+        }
+        return nextSteps;
     }
 
     @Override
