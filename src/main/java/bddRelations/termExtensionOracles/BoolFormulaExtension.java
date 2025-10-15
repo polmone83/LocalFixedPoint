@@ -25,12 +25,16 @@ public class BoolFormulaExtension implements BoolFormulaVisitor<BDDSet>{
 
     @Override
     public BDDSet visitAnd(BoolFormula.And phi) {
-        if(phi.eval(ass)) return new BDDSet(u);
+        if(phi.eval(ass)) {
+            System.out.println("trigger");
+            return new BDDSet(u);
+        }
 
         BDDSet ret = new BDDSet(u); // empty set
         for (BoolFormula subformula : phi.subformulas) {
             BDDSet subret = visit(subformula);
             if(subret.isEmpty() && !subformula.eval(ass)){
+                System.out.println("trigger");
                 return new BDDSet(u); // empty set
             }
             ret.unionWith(subret);
@@ -40,7 +44,10 @@ public class BoolFormulaExtension implements BoolFormulaVisitor<BDDSet>{
 
     @Override
     public BDDSet visitOr(BoolFormula.Or phi) {
-        if(phi.eval(ass)) return new BDDSet(u); // empty set
+        if(phi.eval(ass)) {
+            System.out.println("trigger");
+            return new BDDSet(u); // empty set
+        }
 
         BDDSet ret = new BDDSet(u); // empty set
         for (BoolFormula subformula : phi.subformulas) {
@@ -61,7 +68,12 @@ public class BoolFormulaExtension implements BoolFormulaVisitor<BDDSet>{
 
     @Override
     public BDDSet visitVar(BoolFormula.Var phi) {
-        return BDDSet.toBDDSet(relation.sliceLeftAt(phi.var));
+        if(phi.eval(ass)){
+            System.out.println("trigger");
+            return new BDDSet(u);
+        }else{
+            return BDDSet.toBDDSet(relation.sliceLeftAt(phi.var));
+        }
     }
 
 }

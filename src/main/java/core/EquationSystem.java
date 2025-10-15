@@ -36,7 +36,7 @@ public abstract class EquationSystem<V, D, R extends VarRelation<V,S>, S extends
      */
     private Map<String, V> varsIndex;
 
-    private int interationCount;
+    private int iterationCount;
     private Long execTime;
 
     public EquationSystem() {
@@ -84,10 +84,10 @@ public abstract class EquationSystem<V, D, R extends VarRelation<V,S>, S extends
 
         //log.append("Dependencies: " + oracle);
         //log.append('\n');
-        interationCount= 0;
+        iterationCount = 0;
         Iterator<V> todo = getTodo(targetVar);
         while (todo.hasNext()) {// check if targetVar has been solved
-            interationCount++;
+            iterationCount++;
             V x = todo.next(); // pick a variable
 
             // ---------- Trick to skip unnecessary updates -------------
@@ -237,7 +237,7 @@ public abstract class EquationSystem<V, D, R extends VarRelation<V,S>, S extends
      * @return iteration count
      */
     public int getIterationCount(){
-        return interationCount;
+        return iterationCount;
     }
 
     /**
