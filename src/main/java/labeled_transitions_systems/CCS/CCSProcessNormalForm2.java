@@ -52,13 +52,11 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
                 list.add(subproc);
             }
             return new CCSProcess.Choice(list);
-        }else if (p.process instanceof CCSProcess.Restriction){
+        }else if (p.process instanceof CCSProcess.Restriction child){
             // flatten nested restrictions
-            CCSProcess.Restriction child = (CCSProcess.Restriction) p.process;
             child.chanSet.addAll(p.chanSet); // merge the channel sets
             return visit(child); // skip this process
-        }else if(p.process instanceof CCSProcess.Action){
-            CCSProcess.Action child = (CCSProcess.Action) p.process;
+        }else if(p.process instanceof CCSProcess.Action child){
             if(! p.chanSet.contains(child.channel)){
                 // (a.P) \ S ~ a.(P\S)
                 CCSProcess subproc = visit(new CCSProcess.Restriction(child.process,p.chanSet));
@@ -70,9 +68,8 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
 
     @Override
     public CCSProcess visitRenaming(CCSProcess.Renaming p) {
-        if(p.process instanceof CCSProcess.Action) {
+        if(p.process instanceof CCSProcess.Action child) {
             // push the renaming down (a.P)[\rho] ~ \rho(a).(P[\rho])
-            CCSProcess.Action child = (CCSProcess.Action) p.process;
             String renamedChan = p.applyRenaming(child.channel); // \rho(a)
             CCSProcess p_rho = visit(new CCSProcess.Renaming(child.process, p.renaming));
             return new CCSProcess.Action(child.isInput, renamedChan, p_rho);
