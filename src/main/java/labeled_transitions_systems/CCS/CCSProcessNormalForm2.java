@@ -27,7 +27,7 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
 
     @Override
     public CCSProcess visitChoice(CCSProcess.Choice p) {
-        TreeSet<CCSProcess> children = new TreeSet();
+        Set<CCSProcess> children = new HashSet<>();
         for (CCSProcess child : p.children) {
             child = visit(child); // visit the child
             children.add(child);
@@ -45,8 +45,8 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
     public CCSProcess visitRestriction(CCSProcess.Restriction p) {
         if(p.process instanceof CCSProcess.Choice){
             // push restriction down (P + Q)\S ~ P\S + Q\S
-            TreeSet<CCSProcess> list = new TreeSet<>();
-            TreeSet<CCSProcess> oldList = ((CCSProcess.Choice) p.process).children;
+            HashSet<CCSProcess> list = new HashSet<>();
+            HashSet<CCSProcess> oldList = ((CCSProcess.Choice) p.process).children;
             for (CCSProcess child : oldList) {
                 CCSProcess subproc = visit(new CCSProcess.Restriction(child,p.chanSet));
                 list.add(subproc);
@@ -87,8 +87,8 @@ public class CCSProcessNormalForm2 implements CCSProcessVisitor<CCSProcess>{
 //            return new CCSProcess.Parallel(list);
         }else if(p.process instanceof CCSProcess.Choice){
             // push renaming down (P + Q)[\rho] ~ P[\rho] + Q[\rho]
-            TreeSet<CCSProcess> list = new TreeSet<>();
-            TreeSet<CCSProcess> oldList = ((CCSProcess.Choice) p.process).children;
+            Set<CCSProcess> list = new HashSet<>();
+            Set<CCSProcess> oldList = ((CCSProcess.Choice) p.process).children;
             for (CCSProcess child : oldList) {
                 CCSProcess subproc = visit(new CCSProcess.Renaming(child,p.renaming));
                 list.add(subproc);
