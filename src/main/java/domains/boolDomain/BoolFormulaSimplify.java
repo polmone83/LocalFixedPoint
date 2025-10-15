@@ -1,5 +1,6 @@
 package domains.boolDomain;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 public class BoolFormulaSimplify implements BoolFormulaVisitor<BoolFormula>{
@@ -43,6 +44,32 @@ public class BoolFormulaSimplify implements BoolFormulaVisitor<BoolFormula>{
 
     @Override
     public BoolFormula visitOr(BoolFormula.Or phi) {
+        BoolFormula psi = visitOrAux(phi);
+        if(psi instanceof BoolFormula.Or orPhi) {
+            HashSet<BoolFormula.And> ands = new HashSet<>();
+            // collect all AND subformulas
+            for (BoolFormula subformula : orPhi.subformulas) {
+                if (subformula instanceof BoolFormula.And and) {
+                    ands.add(and);
+                }
+            }
+
+            for (BoolFormula.And and : ands) {
+                for (BoolFormula subformula : and.subformulas) {
+                    if(orPhi.subformulas.contains(subformula))
+
+                        orPhi.subformulas.remove(and);
+                }
+            }
+            if(orPhi.subformulas.size()==1){
+                return orPhi.subformulas.iterator().next();
+            }
+            return orPhi;
+        }
+        return psi;
+    }
+
+    private BoolFormula visitOrAux(BoolFormula.Or phi) {
         if(phi.subformulas.isEmpty()){
             return new BoolFormula.False(phi.system);
         }

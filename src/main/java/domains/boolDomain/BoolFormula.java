@@ -3,12 +3,16 @@ package domains.boolDomain;
 import bddRelations.BDDRel;
 import bddRelations.BDDRelEquationSystem;
 import bddRelations.termExtensionOracles.BoolFormulaExtension;
+import com.google.common.base.Objects;
 import core.*;
+import org.checkerframework.checker.units.qual.A;
+import org.jetbrains.annotations.NotNull;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.awt.event.WindowStateListener;
+import java.util.*;
 
-public abstract class BoolFormula implements RightHandSide<Integer, Boolean, SimpleVarSet> , TermExtension<Integer, Boolean, BDDRel, SimpleVarSet>{ //
+public abstract class BoolFormula implements
+        RightHandSide<Integer, Boolean, SimpleVarSet> , TermExtension<Integer, Boolean, BDDRel, SimpleVarSet>{ //
 
     BDDRelEquationSystem<Boolean> system;
 
@@ -54,6 +58,11 @@ public abstract class BoolFormula implements RightHandSide<Integer, Boolean, Sim
         public Boolean eval(Assignment<Integer, Boolean> ass) {
             return true;
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof True;
+        }
     }
 
     public static class False extends BoolFormula {
@@ -72,7 +81,10 @@ public abstract class BoolFormula implements RightHandSide<Integer, Boolean, Sim
             return false;
         }
 
-
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof False;
+        }
     }
 
     public static class And extends BoolFormula {
@@ -90,6 +102,17 @@ public abstract class BoolFormula implements RightHandSide<Integer, Boolean, Sim
                    BDDRelEquationSystem<Boolean> system) {
             super(system);
             this.subformulas = subformulas;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof And and)) return false;
+            return subformulas.equals(and.subformulas);
+        }
+
+        @Override
+        public int hashCode() {
+            return subformulas.hashCode();
         }
 
         @Override
@@ -126,6 +149,18 @@ public abstract class BoolFormula implements RightHandSide<Integer, Boolean, Sim
         }
 
         @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Or or)) return false;
+
+            return subformulas.equals(or.subformulas);
+        }
+
+        @Override
+        public int hashCode() {
+            return subformulas.hashCode();
+        }
+
+        @Override
         public Boolean eval(Assignment<Integer, Boolean> ass) {
             for (BoolFormula subformula : subformulas) {
                 if (subformula.eval(ass))
@@ -147,6 +182,18 @@ public abstract class BoolFormula implements RightHandSide<Integer, Boolean, Sim
         public Var(Integer var, BDDRelEquationSystem<Boolean> system) {
             super(system);
             this.var = var;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Var var1)) return false;
+
+            return var.equals(var1.var);
+        }
+
+        @Override
+        public int hashCode() {
+            return var.hashCode();
         }
 
         @Override
