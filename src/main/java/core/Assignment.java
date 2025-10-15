@@ -1,10 +1,12 @@
 package core;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class Assignment<V,D> {
+    public HashSet<V> fixpoints;
     private HashMap<V,D> values;
     private LabelMap<V> labelmap;
     D bottomElement;
@@ -14,6 +16,7 @@ public class Assignment<V,D> {
         this.bottomElement = bottomElement;
         this.values = new HashMap<V,D>();
         this.lastChanged = null;
+        this.fixpoints = new HashSet<>();
     }
 
     public Assignment(D bottomElement, LabelMap<V> labelmap){

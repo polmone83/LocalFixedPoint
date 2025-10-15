@@ -17,16 +17,16 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         return toString().compareTo(o.toString());
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (!(o instanceof CCSProcess that)) return false;
-        return toString().equals(that.toString());
-    }
-
-    @Override
-    public int hashCode() {
-        return toString().hashCode();
-    }
+//    @Override
+//    public boolean equals(Object o) {
+//        if (!(o instanceof CCSProcess that)) return false;
+//        return toString().equals(that.toString());
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return toString().hashCode();
+//    }
 
     @Override
     public String toString() {
@@ -117,6 +117,16 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
             return visitor.visitParens(this);
         }
 
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof ParensProcess that)) return false;
+            return process.equals(that.process);
+        }
+
+        @Override
+        public int hashCode() {
+            return process.hashCode();
+        }
     }
 
     public static class Renaming extends CCSProcess {
@@ -126,6 +136,19 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         public Renaming(CCSProcess process, Map<String, String> renaming){
             this.renaming = renaming;
             this.process = process;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Renaming renaming1)) return false;
+            return renaming.equals(renaming1.renaming) && process.equals(renaming1.process);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = renaming.hashCode();
+            result = 31 * result + process.hashCode();
+            return result;
         }
 
         @Override
@@ -150,6 +173,20 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         }
 
         @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Action action)) return false;
+            return Objects.equals(isInput, action.isInput) && process.equals(action.process) && channel.equals(action.channel);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = Objects.hashCode(isInput);
+            result = 31 * result + process.hashCode();
+            result = 31 * result + channel.hashCode();
+            return result;
+        }
+
+        @Override
         public <T> T accept(CCSProcessVisitor<T> visitor) {
             return visitor.visitAction(this);
         }
@@ -170,23 +207,46 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         }
 
         @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Parallel parallel)) return false;
+            return children.equals(parallel.children);
+        }
+
+        @Override
+        public int hashCode() {
+            return children.hashCode();
+        }
+
+        @Override
         public <T> T accept(CCSProcessVisitor<T> visitor) {
             return visitor.visitParallel(this);
         }
     }
 
     public static class Choice extends CCSProcess {
-        public TreeSet<CCSProcess> children;
+        public HashSet<CCSProcess> children;
 
         public Choice(CCSProcess left, CCSProcess right){
-            children = new TreeSet<>();
+            children = new HashSet<>();
             children.add(left);
             children.add(right);
         }
 
         public Choice(Set<CCSProcess> children){
-            this.children = new TreeSet<>(children);
+            this.children = new HashSet<>(children);
         }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Choice choice)) return false;
+            return children.equals(choice.children);
+        }
+
+        @Override
+        public int hashCode() {
+            return children.hashCode();
+        }
+
 
         @Override
         public <T> T accept(CCSProcessVisitor<T> visitor) {
@@ -196,11 +256,24 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
 
     public static class Restriction extends CCSProcess {
         public CCSProcess process;
-        public TreeSet<String> chanSet;
+        public HashSet<String> chanSet;
 
         public Restriction(CCSProcess process, Set<String> chanSet){
             this.process = process;
-            this.chanSet = new TreeSet<>(chanSet);
+            this.chanSet = new HashSet<>(chanSet);
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof Restriction that)) return false;
+            return process.equals(that.process) && chanSet.equals(that.chanSet);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = process.hashCode();
+            result = 31 * result + chanSet.hashCode();
+            return result;
         }
 
         @Override
@@ -212,6 +285,11 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
     public static class Nil extends CCSProcess {
 
         public Nil(){ }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof Nil;
+        }
 
         @Override
         public <T> T accept(CCSProcessVisitor<T> visitor) {
@@ -226,6 +304,17 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         public PName(String pName, CCSInterpreter interpreter){
             this.pName = pName;
             this.interpreter = interpreter;
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!(o instanceof PName pName1)) return false;
+            return pName.equals(pName1.pName);
+        }
+
+        @Override
+        public int hashCode() {
+            return pName.hashCode();
         }
 
         public CCSProcess getDef(){
@@ -267,18 +356,32 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         }
 
         @Override
-        public boolean equals(Object obj) {
-            /*if(obj instanceof CCS_Step){
-                this.toString().equals(obj.toString());
-            }
-            return false;*/
-            return toString().equals(obj.toString());
+        public final boolean equals(Object o) {
+            if (!(o instanceof CCS_Step ccsStep)) return false;
+            return process.equals(ccsStep.process) && action.equals(ccsStep.action) && Objects.equals(inputQ, ccsStep.inputQ);
         }
 
         @Override
         public int hashCode() {
-            return toString().hashCode();
+            int result = process.hashCode();
+            result = 31 * result + action.hashCode();
+            result = 31 * result + Objects.hashCode(inputQ);
+            return result;
         }
+
+        //        @Override
+//        public boolean equals(Object obj) {
+//            /*if(obj instanceof CCS_Step){
+//                this.toString().equals(obj.toString());
+//            }
+//            return false;*/
+//            return toString().equals(obj.toString());
+//        }
+//
+//        @Override
+//        public int hashCode() {
+//            return toString().hashCode();
+//        }
 
     }
 

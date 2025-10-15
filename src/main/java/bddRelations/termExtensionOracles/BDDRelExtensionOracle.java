@@ -12,7 +12,7 @@ public class BDDRelExtensionOracle<D> extends BDDRelOracle<D> {
 
     private BDDRelEquationSystem<D> system;
 
-    public BDDRelExtensionOracle(BDDRelEquationSystem<D> system){
+    public BDDRelExtensionOracle(BDDRelEquationSystem<D> system) {
         this.system = system;
     }
 
@@ -26,31 +26,24 @@ public class BDDRelExtensionOracle<D> extends BDDRelOracle<D> {
     @Override
     public void update(SimpleVarSet visited, Assignment<Integer, D> ass, BDDRel relation) {
 
-        BDDRelUniverse universe = relation.getUniverse();
-        BDDRel rel = universe.diagonal();
+        BDDRelUniverse u = relation.getUniverse();
+        BDDRel rel = u.diagonal();
 
-        //visited.allSetElements()
         system.discoveredVariablesIterator().forEachRemaining(
                 (Integer i) -> {
-            // the set B(ass,oracle.relation)xV
-            TermExtension<Integer,D,BDDRel, SimpleVarSet> t =
-                    ((TermExtension<Integer,D,BDDRel, SimpleVarSet>) system.retrieveRHS(i));
-            BDDRel b = t.evalExtension(system,relation,ass);
-            // add the set L(ass,oracle.relation)x{i} to rel
-            b.intersectionWith(universe.rightSingleton(i));
-            rel.unionWith(b);
-            b.clear();
-        });
+                    // the set B(ass,oracle.relation)xV
+                    TermExtension<Integer, D, BDDRel, SimpleVarSet> t =
+                            ((TermExtension<Integer, D, BDDRel, SimpleVarSet>) system.retrieveRHS(i));
+                    BDDRel b = t.evalExtension(system, relation, ass);
+                    // add the set L(ass,oracle.relation)x{i} to rel
+                    b.intersectionWith(u.rightSingleton(i));
+                    rel.unionWith(b);
+                    b.clear();
+                });
 
-        /*BDDRel nVisited = universe.fullRelation();
+        BDDRel relVisited = u.emptyRelation();
         visited.allSetElements().forEachRemaining(
-                v -> nVisited.diffWith(universe.rightSingleton(v))
-        );
-        rel.unionWith(nVisited);
-        */
-        BDDRel relVisited = universe.emptyRelation();
-        visited.allSetElements().forEachRemaining(
-                v -> relVisited.unionWith(universe.rightSingleton(v))
+                v -> relVisited.unionWith(u.rightSingleton(v))
         );
         // nVisited = V x (V\notVisited)
         rel.unionWith(relVisited.complement());

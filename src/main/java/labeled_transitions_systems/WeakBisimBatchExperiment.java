@@ -2,9 +2,13 @@ package labeled_transitions_systems;
 
 import Experiments.Experiments;
 import Experiments.ExecBatch;
+import bddRelations.BDDRelEquationSystem;
+import bddRelations.booleanSystemsVisitors.ParsedBooleanSystem;
 import bddRelations.locallySoundOracles.*;
 import bddRelations.soundOracles.BDDRelOracle;
+import bddRelations.soundOracles.trigStatic;
 import bddRelations.termExtensionOracles.BDDRelExtensionOracle;
+import bddRelations.termExtensionOracles.BDDRelExtensionOracleBetter;
 
 import java.time.Duration;
 
@@ -36,16 +40,39 @@ public class WeakBisimBatchExperiment implements Experiments {
         //outcome.append(testADG(args[0], args[1],args[2]));
         //outcome.append(", ");
         // run LOCAL Algorithm
-        outcome.append(testFIX(args[0], args[1],args[2]));
+        outcome.append(testGlobalFIX(args[0], args[1],args[2]));
         return outcome.toString();
     }
 
-    private String testFIX(String model_fileName,
+
+    private String testGlobalFIX(String model_fileName,
+                                 String p1, String p2){
+
+        long startTime = System.nanoTime();
+        CCS_Bisim_StaticEquationSystemUpTo system =
+                new CCS_Bisim_StaticEquationSystemUpTo(path+model_fileName,false,true);
+
+        // ORACLE
+        //BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
+        //oracle.addOracle(new MaxPrimeOracle(system, true));
+        //oracle.addOracle(new SMax<>(system, true));
+        //oracle.addOracle(new ArgsOracle<>(system));
+        //oracle.addOracle(new BDDRelExtensionOracle<>(system));
+        //oracle.addOracle(new trigStatic<>(system));
+
+        boolean result = system.localSolve(p1,p2,new trigStatic<>(system));
+
+        long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+        return "" + exectime + ", " + system.getIterationCount() + ", " + system.discoveredVariables().size() + ", " + result;
+
+    }
+
+    private String testLocalFIX(String model_fileName,
                                 String p1, String p2){
         long startTime = System.nanoTime();
         // solve the system
-        CCS_Bisim_EquationSystem system =
-                new CCS_Bisim_EquationSystem(path + model_fileName,false,true);
+        CCS_Bisim_EquationSystemUpTo system =
+                new CCS_Bisim_EquationSystemUpTo(path + model_fileName,false,true);
         boolean result = system.localSolve(p1,p2,getOracle(system));
         // --------------
         long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
@@ -72,14 +99,16 @@ public class WeakBisimBatchExperiment implements Experiments {
         }
     }
 
-    private static BDDRelOracle<Boolean> getOracle(CCS_Bisim_EquationSystem system){
-//        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
-//        oracle.addOracle(new ArgsLocal<>(system));
-//        oracle.addOracle(new trigLocalv2<>(system));
+    private static BDDRelOracle<Boolean> getOracle(BDDRelEquationSystem<Boolean> system){
+        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
+        oracle.addOracle(new BDDRelExtensionOracleBetter<>(system));
+        oracle.addOracle(new FixPoint<>());
+        //oracle.addOracle(new ArgsLocal<>(system));
+        //oracle.addOracle(new trigLocalv2<>(system));
         //oracle.addOracle(new SMax<>(system,true));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         //oracle.addOracle(new Dep<>(system));
-        return new Trivial<>();
+        return oracle;
     }
 
     public static void main(String[] args) {
@@ -93,8 +122,8 @@ public class WeakBisimBatchExperiment implements Experiments {
 
         // MAC Batch
         setOS("mac");
-        //String batch = "Batch-ABP_bad.txt"
-        String batch = "Batch-ABP_ok.txt";
+        String batch = "Batch-ABP_bad.txt";
+        batch = "Batch-ABP_ok.txt";
 
         ExecBatch eb = new ExecBatch();
         WeakBisimBatchExperiment runner = new WeakBisimBatchExperiment();
