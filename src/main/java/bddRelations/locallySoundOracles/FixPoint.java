@@ -21,7 +21,7 @@ public class FixPoint<D> extends BDDRelOracle<D> {
     public void update(SimpleVarSet visited, Assignment<Integer, D> ass, BDDRel relation) {
         BDDRelUniverse universe = relation.getUniverse();
         for (Integer x : ass.fixpoints) {
-            System.out.print(x +",");
+            //System.out.print(x +",");
             // remove x both from left and right
             BDDRel toRemove = universe.rightSingleton(x);
             toRemove.unionWith(universe.leftSingleton(x));
@@ -29,6 +29,6 @@ public class FixPoint<D> extends BDDRelOracle<D> {
             relation.diffWith(toRemove);
             toRemove.clear();
         }
-        System.out.println();
+        //System.out.println();
     }
 }

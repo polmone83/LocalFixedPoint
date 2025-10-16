@@ -5,6 +5,7 @@ import bddRelations.BDDRelStaticEquationSystem;
 import bddRelations.BDDRelUniverse;
 import bddRelations.soundOracles.BDDRelStaticOracle;
 import core.Assignment;
+import core.RightHandSide;
 import core.SimpleVarSet;
 import core.TermExtension;
 
@@ -23,14 +24,20 @@ public class BDDRelStaticExtensionOracle<D> extends BDDRelStaticOracle<D> {
 
         BDDRel rel = universe.diagonal(); // start from the diagonal
         system.discoveredVariablesIterator().forEachRemaining((Integer i) -> {
-
+            RightHandSide<Integer, D, SimpleVarSet> ti = system.retrieveRHS(i);
             // the set B(ass,oracle.relation)xV
             TermExtension<Integer,D,BDDRel,SimpleVarSet> t =
-                    ((TermExtension<Integer,D,BDDRel,SimpleVarSet>) system.getRHS(i));
+                    ((TermExtension<Integer, D, BDDRel, SimpleVarSet>) ti);
             BDDRel b = t.evalExtension(system, relation,ass);
             // add the set L(ass,oracle.relation)x{i} to rel
-            b.intersectionWith(universe.rightSingleton(i));
-            rel.unionWith(b);
+            if (!b.isEmpty()) {
+                b.intersectionWith(universe.rightSingleton(i));
+                rel.unionWith(b);
+            }else if(ti.eval(ass).equals(ass.getValue(i))){
+                // i has reached a fixpoint
+                ass.fixpoints.add(i);
+            }
+
             b.clear();
         });
 

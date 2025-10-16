@@ -9,6 +9,7 @@ import labeled_transitions_systems.CCS.CCSInterpreter;
 import labeled_transitions_systems.CCS.CCSProcess;
 import labeled_transitions_systems.CCS.CCSProcessSuccessor;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -21,6 +22,7 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
     CCSInterpreter ccsInterpreter;
     CCSProcessSuccessor succGenerator;
     boolean strong;
+    long compileTime;
 
     HashSet<BoolFormula> collectedFormulas;
     /**
@@ -42,13 +44,21 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
         this.collectedFormulas = new HashSet<>();
     }
 
+    public long getCompileTime() {
+        return compileTime;
+    }
+
     public Boolean localSolve(String p1, String p2, BDDRelOracle<Boolean> oracle) {
         flushEquations();
+        long startTime = System.nanoTime();
         makeEquationSystem(p1,p2);
+        compileTime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+        // get target variable
         VarPair<CCSProcess> init = new OrderedVarPair(
                 ccsInterpreter.getProcess(p1),
                 ccsInterpreter.getProcess(p2)
         );
+        // call the solver
         return localSolve(init.toString(),false,oracle);
     }
 

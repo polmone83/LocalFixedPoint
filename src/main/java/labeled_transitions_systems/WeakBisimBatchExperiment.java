@@ -68,36 +68,36 @@ public class WeakBisimBatchExperiment implements Experiments {
     private String testGlobalFIX(String model_fileName,
                                  String p1, String p2){
 
-        long startTime = System.nanoTime();
         CCS_Bisim_StaticEquationSystemUpTo system =
                 new CCS_Bisim_StaticEquationSystemUpTo(path+model_fileName,false,true);
-
         // ORACLE
-        //BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
+        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
         //oracle.addOracle(new MaxPrimeOracle(system, true));
         //oracle.addOracle(new SMax<>(system, true));
         //oracle.addOracle(new ArgsOracle<>(system));
-        //oracle.addOracle(new BDDRelExtensionOracle<>(system));
+        oracle.addOracle(new FixPoint<>());
+        oracle.addOracle(new BDDRelExtensionOracle<>(system));
+        oracle.addOracle(new FixPoint<>());
         //oracle.addOracle(new trigStatic<>(system));
 
-        BDDRelOracle<Boolean> oracle = new trigStatic<>(system);
+        //BDDRelOracle<Boolean> oracle = new SMax<>(system, true);
 
         boolean result = system.localSolve(p1,p2,oracle);
 
-        long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
-        return system.getExecTime() + ", " + system.getRHSEvalCount() + ", " + system.getIterationCount() + ", " + system.varsCount() + ", " + result;
+
+        return system.getExecTime() + ", " + system.getCompileTime() +", " + system.getRHSEvalCount() + ", " + system.getIterationCount() + ", " + system.varsCount() + ", " + result;
 
     }
 
     private String testLocalFIX(String model_fileName,
                                 String p1, String p2){
-        long startTime = System.nanoTime();
+        //long startTime = System.nanoTime();
         // solve the system
         CCS_Bisim_EquationSystemUpTo system =
                 new CCS_Bisim_EquationSystemUpTo(path + model_fileName,false,true);
         boolean result = system.localSolve(p1,p2,getOracle(system));
         // --------------
-        long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
+        //long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
         //long exectime = (System.nanoTime() - startTime) / magnitude; // runtime in ms
         return system.getExecTime() + ", " + system.getRHSEvalCount() + ", " + system.getIterationCount() + ", " + system.varsCount() + ", " + result; //Long.toString(exectime);
     }
@@ -123,32 +123,34 @@ public class WeakBisimBatchExperiment implements Experiments {
 
     private static BDDRelOracle<Boolean> getOracle(BDDRelEquationSystem<Boolean> system){
         BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
-        //oracle.addOracle(new BDDRelExtensionOracleBetter<>(system));
-        //oracle.addOracle(new FixPoint<>());
+        oracle.addOracle(new FixPoint<>());
+        oracle.addOracle(new BDDRelExtensionOracle<>(system));
+        oracle.addOracle(new FixPoint<>());
         //oracle.addOracle(new ArgsLocal<>(system));
         //oracle.addOracle(new trigLocalv2<>(system));
-        oracle.addOracle(new SMax<>(system,true));
+        //oracle.addOracle(new SMax<>(system,true));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         //oracle.addOracle(new Dep<>(system));
-        return new trigLocalv2<>(system);
+        return oracle;
     }
 
     public static void main(String[] args) {
         // LINUX Batch
-        setOS("linux");
-        //String batch = "abp/Batch-ABP_ok.txt";
-        //String batch = "abp/Batch-ABP_bad.txt";
-        String batch = "RingElection/election_ok/Batch-RingElection_ok.txt";
-        //String batch = "RingElection/election_bad/Batch-RingElection_bad.txt";
-        batch = "BatchLocGlob.txt";
-        //-----------------------------
+//        setOS("linux");
+//        //String batch = "abp/Batch-ABP_ok.txt";
+//        //String batch = "abp/Batch-ABP_bad.txt";
+//        String batch = "RingElection/election_ok/Batch-RingElection_ok.txt";
+//        //String batch = "RingElection/election_bad/Batch-RingElection_bad.txt";
+//        batch = "BatchLocGlob.txt";
+//        //-----------------------------
 
         // MAC Batch
-//        setOS("mac");
-//        String batch = "Batch-ABP_bad.txt";
-//        //batch = "Batch-ABP_ok.txt";
-//        //batch = "Batch-RingElection_bad.txt";
-//        batch = "Batch-RingElection_ok.txt";
+        setOS("mac");
+        String batch = "Batch-ABP_bad.txt";
+        //batch = "Batch-ABP_ok.txt";
+        //batch = "Batch-RingElection_bad.txt";
+        //batch = "Batch-RingElection_ok.txt";
+        batch = "LocalGlobal/BatchLocGlob.txt";
 
         //methods.add(Method.ADG);
         methods.add(Method.LOCAL);
