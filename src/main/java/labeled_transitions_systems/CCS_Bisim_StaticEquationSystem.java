@@ -16,13 +16,11 @@ import java.util.Set;
 
 import static labeled_transitions_systems.CCS.CCSProcess.TAU;
 
-public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSystem<Boolean> {
+public class CCS_Bisim_StaticEquationSystem extends BDDRelStaticEquationSystem<Boolean> {
 
     CCSInterpreter ccsInterpreter;
     CCSProcessSuccessor succGenerator;
     boolean strong;
-
-    HashSet<BoolFormula> collectedFormulas;
     /**
      * Track the nodes that have been visited and assigns them their index
      */
@@ -35,11 +33,10 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
 
     ArrayList<VarPair<CCSProcess>> todo;
 
-    public CCS_Bisim_StaticEquationSystemUpTo(String modelCode, boolean strong, boolean fileFlag){
+    public CCS_Bisim_StaticEquationSystem(String modelCode, boolean strong, boolean fileFlag){
         this.ccsInterpreter = new CCSInterpreter(modelCode,fileFlag);
         this.succGenerator = new CCSProcessSuccessor();
         this.strong = strong;
-        this.collectedFormulas = new HashSet<>();
     }
 
     public Boolean localSolve(String p1, String p2, BDDRelOracle<Boolean> oracle) {
@@ -90,7 +87,6 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
             todo.removeFirst();
             String varLabel = pair.toString();
             Integer varIndex = visitedNode.get(varLabel);
-            collectedFormulas.add(new BoolFormula.Var(varIndex, this));
             this.addEquation(varLabel,varIndex,makeFormula(pair));
         }
     }
@@ -103,31 +99,9 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
         BoolFormula pairformula = new BoolFormula.Or(
                 simulation(succS,succT),
                 simulation(succT,succS),
-                CCS_Bisim_StaticEquationSystemUpTo.this
+                CCS_Bisim_StaticEquationSystem.this
                 );
-        return uptoClosure(BoolFormulaSimplify.simplify(pairformula));
-    }
-
-    private BoolFormula uptoClosure(BoolFormula phi){
-        if(phi instanceof BoolFormula.Or psi){
-            HashSet<BoolFormula> psiSubs = new HashSet<>();
-            for (BoolFormula psiSub : psi.subformulas) {
-                if(!collectedFormulas.contains(psiSub)){
-                    psiSubs.add(psiSub);
-                    collectedFormulas.add(psiSub);
-                }
-            }
-            if(psiSubs.isEmpty()){
-                return new BoolFormula.False(this);
-            }else if(psiSubs.size() == 1){
-                return psiSubs.iterator().next();
-            }else{
-                return new BoolFormula.Or(psiSubs,this);
-            }
-        }
-        // nothing to remove
-        collectedFormulas.add(phi);
-        return phi;
+        return BoolFormulaSimplify.simplify(pairformula);
     }
 
     private Set<CCSProcess.CCS_Step> getSuccessors(CCSProcess p){
@@ -147,10 +121,10 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
                 }
             }
             subFormulaAND.add(
-                    new BoolFormula.And(subFormulaOR, CCS_Bisim_StaticEquationSystemUpTo.this)
+                    new BoolFormula.And(subFormulaOR, CCS_Bisim_StaticEquationSystem.this)
             );
         }
-        return new BoolFormula.Or(subFormulaAND, CCS_Bisim_StaticEquationSystemUpTo.this);
+        return new BoolFormula.Or(subFormulaAND, CCS_Bisim_StaticEquationSystem.this);
     }
 
     private String getAction(CCSProcess.CCS_Step step){

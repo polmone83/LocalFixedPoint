@@ -6,6 +6,7 @@ import bddRelations.BDDRel;
 import bddRelations.BDDRelEquationSystem;
 import bddRelations.locallySoundOracles.BDDOracleComp;
 import bddRelations.locallySoundOracles.SMax;
+import bddRelations.locallySoundOracles.trigLocalv2;
 import bddRelations.termExtensionOracles.BDDRelExtensionOracle;
 import core.LocalOracle;
 import core.SimpleVarSet;
@@ -64,7 +65,7 @@ public class WCTLBatchExperiments implements Experiments {
         BDDOracleComp<WValue> oracle = new BDDOracleComp<>();
         oracle.addOracle(new SMax<>(system,WValue.zero));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
-        //oracle.addOracle(new trigLocalv2<>(system));
+        oracle.addOracle(new trigLocalv2<>(system));
         //oracle.addOracle(new Dep<>(system));
         return oracle;
     }
@@ -74,14 +75,16 @@ public class WCTLBatchExperiments implements Experiments {
         String path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/ABP/";
         //path = "/Users/giovbacci/Library/CloudStorage/OneDrive-AalborgUniversitet/AAU/Research/Tools/Experiments/WCTL/LeaderElection/";
         String batch = "Batch-ABP-wctl.txt";
+        //String batch = "Batch-wctl test.txt";
 
         // LINUX
-        //path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/ABP/";
-        //batch = "Batch-ABP-wctl-linux.txt";
-        path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/LeaderElection/";
-        batch = "Batch-wctl-linux.txt";
+        path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/ABP/";
+        batch = "Batch-ABP-wctl-linux.txt";
+        //path = "/home/bacci/Tools/LocalFixpoint/Experiments/WCTL/LeaderElection/";
+        //batch = "Batch-wctl-linux.txt";
+        //batch = "Batch-wctl-linux-test.txt";
 
-        //String batch = "Batch-wctl test.txt";
+
 
         ExecBatch eb = new ExecBatch();
         WCTLBatchExperiments runner = new WCTLBatchExperiments();
