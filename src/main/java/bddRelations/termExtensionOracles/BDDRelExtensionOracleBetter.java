@@ -32,28 +32,28 @@ public class BDDRelExtensionOracleBetter<D> extends BDDRelOracle<D> {
 
         // system.discoveredVariablesIterator()
         visited.allSetElements().forEachRemaining(
-                (Integer i) -> {
-                    if(system.discoveredVariables().contains(i)) {
-                        RightHandSide<Integer, D, SimpleVarSet> ti = system.retrieveRHS(i);
+                (Integer y) -> {
+                    if(system.discoveredVariables().contains(y)) {
+                        RightHandSide<Integer, D, SimpleVarSet> ti = system.retrieveRHS(y);
                         // the set B(ass,oracle.relation)xV
                         TermExtension<Integer, D, BDDRel, SimpleVarSet> t =
                                 ((TermExtension<Integer, D, BDDRel, SimpleVarSet>) ti);
                         BDDRel b = t.evalExtension(system, relation, ass);
                         if (!b.isEmpty()) {
-                            // add the set L(ass,oracle.relation)x{i} to rel
-                            b.intersectionWith(u.rightSingleton(i));
+                            // add the set L(ass,oracle.relation)x{y} to rel
+                            b.intersectionWith(u.rightSingleton(y));
                             rel.unionWith(b);
-                            rel.insertPair(i, i);
+                            rel.insertPair(y, y);
                         }
-                        if (!ti.eval(ass).equals(ass.getValue(i))) {
-                            rel.insertPair(i, i);
+                        if (!ti.eval(ass).equals(ass.getValue(y))) {
+                            rel.insertPair(y, y);
                         }else if(b.isEmpty()){
-                            // i has reached a fixpoint
-                            ass.fixpoints.add(i);
+                            // y has reached a fixpoint
+                            ass.fixpoints.add(y);
                         }
                         b.clear();
                     }else{
-                        rel.unionWith(u.rightSingleton(i));
+                        rel.unionWith(u.rightSingleton(y));
                     }
         });
         relation.intersectionWith(rel);

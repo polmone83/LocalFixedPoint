@@ -69,8 +69,8 @@ public class WeakBisimBatchExperiment implements Experiments {
                                  String p1, String p2){
 
         long startTime = System.nanoTime();
-        CCS_Bisim_StaticEquationSystem system =
-                new CCS_Bisim_StaticEquationSystem(path+model_fileName,false,true);
+        CCS_Bisim_StaticEquationSystemUpTo system =
+                new CCS_Bisim_StaticEquationSystemUpTo(path+model_fileName,false,true);
 
         // ORACLE
         //BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
@@ -80,7 +80,7 @@ public class WeakBisimBatchExperiment implements Experiments {
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         //oracle.addOracle(new trigStatic<>(system));
 
-        boolean result = system.localSolve(p1,p2,new Trivial<>());
+        boolean result = system.localSolve(p1,p2,new trigStatic<>(system));
 
         long exectime = Duration.ofNanos(System.nanoTime() - startTime).toMillis();
         return "" + exectime + ", " + system.getIterationCount() + ", " + system.discoveredVariables().size() + ", " + result;
@@ -121,33 +121,35 @@ public class WeakBisimBatchExperiment implements Experiments {
 
     private static BDDRelOracle<Boolean> getOracle(BDDRelEquationSystem<Boolean> system){
         BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
-        oracle.addOracle(new BDDRelExtensionOracleBetter<>(system));
-        oracle.addOracle(new FixPoint<>());
+        //oracle.addOracle(new BDDRelExtensionOracleBetter<>(system));
+        //oracle.addOracle(new FixPoint<>());
         //oracle.addOracle(new ArgsLocal<>(system));
         //oracle.addOracle(new trigLocalv2<>(system));
-        //oracle.addOracle(new SMax<>(system,true));
+        oracle.addOracle(new SMax<>(system,true));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         //oracle.addOracle(new Dep<>(system));
         return oracle;
     }
 
     public static void main(String[] args) {
-        // LINUX Batch
-        setOS("linux");
-        String batch = "abp/Batch-ABP_ok.txt";
-        //String batch = "abp/Batch-ABP_bad.txt";
-        //String batch = "RingElection/election_ok/Batch-RingElection_ok.txt";
-        //String batch = "RingElection/election_bad/Batch-RingElection_bad.txt";
-        //-----------------------------
+//        // LINUX Batch
+//        setOS("linux");
+//        //String path = "abp/Batch-ABP_ok.txt";
+//        //String path = "abp/Batch-ABP_bad.txt";
+//        //String path = "RingElection/election_ok/Batch-RingElection_ok.txt";
+//        String path = "RingElection/election_bad/Batch-RingElection_bad.txt";
+//        //-----------------------------
 
-//        // MAC Batch
-//        setOS("mac");
-//        String batch = "Batch-ABP_bad.txt";
-//        batch = "Batch-ABP_ok.txt";
+        // MAC Batch
+        setOS("mac");
+        String batch = "Batch-ABP_bad.txt";
+        //batch = "Batch-ABP_ok.txt";
+        //batch = "Batch-RingElection_bad.txt";
+        batch = "Batch-RingElection_ok.txt";
 
         //methods.add(Method.ADG);
-        //methods.add(Method.LOCAL);
-        methods.add(Method.GLOBAL);
+        methods.add(Method.LOCAL);
+        //methods.add(Method.GLOBAL);
 
         ExecBatch eb = new ExecBatch();
         WeakBisimBatchExperiment runner = new WeakBisimBatchExperiment();
