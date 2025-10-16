@@ -46,6 +46,7 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
     }
 
     public Boolean localSolve(String p1, String p2, BDDRelOracle<Boolean> oracle) {
+        flushEquations();
         makeEquationSystem(p1,p2);
         VarPair<CCSProcess> init = new OrderedVarPair(
                 ccsInterpreter.getProcess(p1),
@@ -76,18 +77,7 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
         return false;
     }
 
-//    @Override
-//    public RightHandSide<Integer, Boolean, SimpleVarSet> getRHS(Integer x) {
-//        // we assume the index has been encountered
-//        VarPair<CCSProcess> pair = nodesIndex.get(x);
-//        if(pair == null)
-//            throw new RuntimeException("The index is not known");
-//
-//        collectedFormulas.add(new BoolFormula.Var(x, this));
-//        return makeFormula(pair);
-//    }
-
-    public void makeEquationSystem(String p1, String p2){
+    private void makeEquationSystem(String p1, String p2){
         visitedNode = new HashMap<>();
         nodesIndex = new HashMap<>();
         varCounter = 0;
@@ -118,7 +108,7 @@ public class CCS_Bisim_StaticEquationSystemUpTo extends BDDRelStaticEquationSyst
                 simulation(succT,succS),
                 CCS_Bisim_StaticEquationSystemUpTo.this
                 );
-        return pairformula;//uptoClosure(BoolFormulaSimplify.simplify(pairformula));
+        return uptoClosure(BoolFormulaSimplify.simplify(pairformula));
     }
 
     private BoolFormula uptoClosure(BoolFormula phi){

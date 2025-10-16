@@ -16,6 +16,10 @@ public abstract class BDDRelStaticEquationSystem<D>  extends BDDRelEquationSyste
      * Construct an empty equation system
      */
     public BDDRelStaticEquationSystem(){
+        flushEquations();
+    }
+
+    protected void flushEquations(){
         this.equations = new HashMap<>();
         this.labels = new HashMap<>();
         this.varsIndex = new HashMap<>();

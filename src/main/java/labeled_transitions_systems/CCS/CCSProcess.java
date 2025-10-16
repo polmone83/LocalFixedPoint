@@ -17,17 +17,6 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         return toString().compareTo(o.toString());
     }
 
-//    @Override
-//    public boolean equals(Object o) {
-//        if (!(o instanceof CCSProcess that)) return false;
-//        return toString().equals(that.toString());
-//    }
-//
-//    @Override
-//    public int hashCode() {
-//        return toString().hashCode();
-//    }
-
     @Override
     public String toString() {
         if (id == null) id = CCSProcessPrettyPrint.prettyPrint(this);
@@ -233,7 +222,11 @@ public abstract class CCSProcess implements Comparable<CCSProcess>{
         }
 
         public Choice(Set<CCSProcess> children){
-            this.children = new HashSet<>(children);
+            if(children instanceof HashSet<CCSProcess> hs){
+                this.children = hs;
+            }else{
+                this.children = new HashSet<>(children);
+            }
         }
 
         @Override

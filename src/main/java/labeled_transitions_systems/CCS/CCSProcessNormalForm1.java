@@ -3,7 +3,6 @@ package labeled_transitions_systems.CCS;
 import java.util.*;
 
 public class CCSProcessNormalForm1 implements CCSProcessVisitor<CCSProcess>{
-    //HashMap<String, CCSProcess> table;
 
     @Override
     public CCSProcess visitNil(CCSProcess.Nil p) {
@@ -50,7 +49,7 @@ public class CCSProcessNormalForm1 implements CCSProcessVisitor<CCSProcess>{
 
     @Override
     public CCSProcess visitChoice(CCSProcess.Choice p) {
-        TreeSet<CCSProcess> children = new TreeSet();
+        HashSet<CCSProcess> children = new HashSet<>();
         for (CCSProcess child : p.children) {
             child = visit(child); // visit the child
             if(child instanceof CCSProcess.Choice){
@@ -65,7 +64,7 @@ public class CCSProcessNormalForm1 implements CCSProcessVisitor<CCSProcess>{
         if(children.size() == 0){
             return new CCSProcess.Nil();
         }else if (children.size() == 1){
-            return children.getFirst();
+            return children.iterator().next();
         }
 
         return new CCSProcess.Choice(children);

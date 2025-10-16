@@ -11,10 +11,19 @@ import bddRelations.termExtensionOracles.BDDRelExtensionOracle;
 import bddRelations.termExtensionOracles.BDDRelExtensionOracleBetter;
 
 import java.time.Duration;
+import java.util.GregorianCalendar;
+import java.util.HashSet;
 
 public class WeakBisimBatchExperiment implements Experiments {
     private static String path = "";
     private static String adg = "";
+
+    private static final HashSet<Method> methods = new HashSet<>();
+    enum Method {
+        ADG,
+        GLOBAL,
+        LOCAL
+    }
 
     /**
      * Run a single experiment on a set of arguments (to be found at the given path)
@@ -34,13 +43,24 @@ public class WeakBisimBatchExperiment implements Experiments {
         outcome.append(args[1]);
         outcome.append(" ~ ");
         outcome.append(args[2]);
-        outcome.append(", ");
 
-        // run ADG
-        //outcome.append(testADG(args[0], args[1],args[2]));
-        //outcome.append(", ");
-        // run LOCAL Algorithm
-        outcome.append(testGlobalFIX(args[0], args[1],args[2]));
+        if(methods.contains(Method.ADG)) {
+            // run ADG
+            outcome.append(", ");
+            outcome.append(testADG(args[0], args[1],args[2]));
+        }
+
+        if(methods.contains(Method.LOCAL)) {
+            // run LOCAL Algorithm
+            outcome.append(", ");
+            outcome.append(testLocalFIX(args[0], args[1], args[2]));
+        }
+
+        if(methods.contains(Method.GLOBAL)) {
+            // run GLOBAL Algorithm
+            outcome.append(", ");
+            outcome.append(testGlobalFIX(args[0], args[1],args[2]));
+        }
         return outcome.toString();
     }
 
@@ -124,6 +144,9 @@ public class WeakBisimBatchExperiment implements Experiments {
         setOS("mac");
         String batch = "Batch-ABP_bad.txt";
         batch = "Batch-ABP_ok.txt";
+
+        methods.add(Method.ADG);
+        methods.add(Method.GLOBAL);
 
         ExecBatch eb = new ExecBatch();
         WeakBisimBatchExperiment runner = new WeakBisimBatchExperiment();
