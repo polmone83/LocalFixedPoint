@@ -132,9 +132,9 @@ public class CCSHMLTab extends DomainTab {
         // construct the oracle
         BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
         //oracle.addOracle(new MaxPrimeOracle(system, true));
-        oracle.addOracle(new SMax<>(system, true));
+        //oracle.addOracle(new SMax<>(system, true));
         //oracle.addOracle(new ArgsOracle<>(system));
-        oracle.addOracle(new BDDRelExtensionOracle<>(system));
+        //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         oracle.addOracle(new trigStatic<>(system));
 
         return oracle;

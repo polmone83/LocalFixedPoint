@@ -65,7 +65,7 @@ public class WCTLBatchExperiments implements Experiments {
         BDDOracleComp<WValue> oracle = new BDDOracleComp<>();
         oracle.addOracle(new SMax<>(system,WValue.zero));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
-        oracle.addOracle(new trigLocalv2<>(system));
+        //oracle.addOracle(new trigLocalv2<>(system));
         //oracle.addOracle(new Dep<>(system));
         return oracle;
     }
