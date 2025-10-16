@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class WKS_CTL_EquationSystemV2 extends BDDRelEquationSystem<WValue> {
+    HashSet<WCCSProcess> visited = new HashSet<>();
 
     private int K = 0;
     private final WeightedExpression zero, infinity;
@@ -532,23 +533,27 @@ public class WKS_CTL_EquationSystemV2 extends BDDRelEquationSystem<WValue> {
 
         @Override
         public WeightedExpression visitExistentialFinally(WCTLParser.ExistentialFinallyContext ctx) {
+            visited.add(process);
             // EF psi
             WCTLParser.FormulaContext psi = ctx.formula();
 
             if (symbolic)
                 throw new RuntimeException("The formula " + ctx + "cannot be symbolic");
 
-
             Node psiNode = new Node(process, psi);
-            addVariable(psiNode);
+            //addVariable(psiNode);
+            //System.out.println(psiNode);
 
             HashSet<WeightedExpression> subExpressions = new HashSet<>();
-            subExpressions.add(getVariable(psiNode));
+            //subExpressions.add(getVariable(psiNode));
+            subExpressions.add(psiNode.visit(psi));
             for (WCCSProcess.WCCS_Step step : getSuccessors(process)) {
-                Node succNode = new Node(step.process, this.formula);
-                addVariable(succNode);
+                if(!visited.contains(step.process)) {
+                    Node succNode = new Node(step.process, this.formula);
+                    addVariable(succNode);
 
-                subExpressions.add(getVariable(succNode));
+                    subExpressions.add(getVariable(succNode));
+                }
             }
             return new WeightedExpression.Min(subExpressions, WKS_CTL_EquationSystemV2.this);
 

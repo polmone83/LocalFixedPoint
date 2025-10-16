@@ -58,6 +58,8 @@ public class WESimplify implements WeightedExpressionVisitor<WeightedExpression>
         if(isZero(bound) || isZero(subexpr))
             return new WeightedExpression.Natural(0, expr.system);
 
+
+
         return new WeightedExpression.Bound(bound, subexpr, expr.system);
     }
 
