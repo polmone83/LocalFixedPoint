@@ -71,16 +71,16 @@ public class WeakBisimBatchExperiment implements Experiments {
         CCS_Bisim_StaticEquationSystemUpTo system =
                 new CCS_Bisim_StaticEquationSystemUpTo(path+model_fileName,false,true);
         // ORACLE
-        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
+//        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
         //oracle.addOracle(new MaxPrimeOracle(system, true));
         //oracle.addOracle(new SMax<>(system, true));
         //oracle.addOracle(new ArgsOracle<>(system));
-        oracle.addOracle(new FixPoint<>());
-        oracle.addOracle(new BDDRelExtensionOracle<>(system));
-        oracle.addOracle(new FixPoint<>());
+//        oracle.addOracle(new FixPoint<>());
+//        oracle.addOracle(new BDDRelExtensionOracle<>(system));
+//        oracle.addOracle(new FixPoint<>());
         //oracle.addOracle(new trigStatic<>(system));
 
-        //BDDRelOracle<Boolean> oracle = new SMax<>(system, true);
+        BDDRelOracle<Boolean> oracle = new BDDRelExtensionOracle<>(system);
 
         boolean result = system.localSolve(p1,p2,oracle);
 
@@ -122,16 +122,16 @@ public class WeakBisimBatchExperiment implements Experiments {
     }
 
     private static BDDRelOracle<Boolean> getOracle(BDDRelEquationSystem<Boolean> system){
-        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
-        oracle.addOracle(new FixPoint<>());
-        oracle.addOracle(new BDDRelExtensionOracle<>(system));
-        oracle.addOracle(new FixPoint<>());
+//        BDDOracleComp<Boolean> oracle = new BDDOracleComp<>();
+//        oracle.addOracle(new FixPoint<>());
+//        oracle.addOracle(new BDDRelExtensionOracle<>(system));
+//        oracle.addOracle(new FixPoint<>());
         //oracle.addOracle(new ArgsLocal<>(system));
         //oracle.addOracle(new trigLocalv2<>(system));
         //oracle.addOracle(new SMax<>(system,true));
         //oracle.addOracle(new BDDRelExtensionOracle<>(system));
         //oracle.addOracle(new Dep<>(system));
-        return oracle;
+        return new BDDRelExtensionOracle<>(system);
     }
 
     public static void main(String[] args) {
