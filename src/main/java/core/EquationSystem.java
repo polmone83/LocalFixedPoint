@@ -94,7 +94,9 @@ public abstract class EquationSystem<V, D, R extends VarRelation<V,S>, S extends
             // if the variable is already discovered, and we know that it won't change
             // value after the last update, we can simply skip it
             LazyRHS testrhs = equations.get(x);
-            if(testrhs != null && testrhs.value != null) continue;
+            if(testrhs != null && testrhs.value != null &&
+                    testrhs.value.equals(assignment.getValue(x))
+            ) continue;
             // ----------------------------------------------------------
 
             //log.append("pick: " + getLabel(x));
